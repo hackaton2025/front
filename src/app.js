@@ -187,6 +187,9 @@ case 'get_messages_ack':
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         break;
 
+        case 'join_group_ack':
+          console.log('Joined group:', json);
+        break;
       default:
         // inne komunikaty
         break;
@@ -240,6 +243,7 @@ createNewGroup.addEventListener('click', function (event) {
   const groupName = prompt('Podaj nazwę nowej grupy:');
   if (groupName) {
     socket.send(JSON.stringify({ opcode: 'new_group', name: groupName }));
+    location.reload();
   }
 });
 
@@ -247,6 +251,7 @@ joinToGroup.addEventListener('click', function (event) {
   event.preventDefault();
   const groupId = prompt('Podaj ID grupy, do której chcesz dołączyć:');
   if (groupId) {
-    socket.send(JSON.stringify({ opcode: 'join_group', joinGroupId: parseInt(groupId) }));
+    socket.send(JSON.stringify({ opcode: 'join_group', group_id: parseInt(groupId) }));
+    location.reload();
   }
 });
