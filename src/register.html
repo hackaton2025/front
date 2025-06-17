@@ -10,10 +10,17 @@
         #spinner {
             display: none;
         }
+    
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100% !important;
+                padding: 1rem; /* Opcjonalne zmniejszenie paddingu na mniejszych ekranach */
+            }
+        }
     </style>
   </head>
 <body>
-    <div class="container" style="max-width: 50%; margin: 0 auto;">
+    <div class="container p-5" style="max-width: 50%; margin: 0 auto;">
         <h1 class="text-center">Register</h1>
 
         <input type="text" id="username" class="form-control mb-3" placeholder="Nazwa" required>
