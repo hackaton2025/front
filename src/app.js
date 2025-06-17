@@ -85,11 +85,6 @@ async function fetchData() {
             messagesContainer.appendChild(h4);
         }
 
-        if (urlParams.has('group')) {
-          const groupId = parseInt(urlParams.get('group'));
-          
-        }
-
         break;
 
 case 'get_messages_ack':
@@ -128,6 +123,12 @@ case 'get_messages_ack':
       if (!json.content || !json.username || !json.created_at) {
           console.error('Incomplete message data:', json);
           return;
+      }
+      console.log(json);
+      console.log(parseInt(json.channelId), parseInt(GetURLParameter('channel')));
+      if (parseInt(json.channelId) != parseInt(GetURLParameter('channel'))) {
+        console.log('Message not for this channel. Ignoring.');
+        break;
       }
   
       /* === WIADOMOŚCI === */
