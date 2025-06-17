@@ -24,3 +24,11 @@
   background-color: #f8f9fa;
   border-top: 1px solid #dee2e6;
 }
+
+#createNewGroup:hover {
+  cursor: pointer;
+}
+
+#joinToGroup:hover {
+  cursor: pointer;
+}

@@ -231,3 +231,22 @@ sendMessageButton.addEventListener('click', function (event) {
   // Wyczyść pole tekstowe po wysłaniu wiadomości
   messageInput.value = '';
 });
+
+let createNewGroup = document.getElementById('createNewGroup');
+let joinToGroup = document.getElementById('joinToGroup');
+
+createNewGroup.addEventListener('click', function (event) {
+  event.preventDefault();
+  const groupName = prompt('Podaj nazwę nowej grupy:');
+  if (groupName) {
+    socket.send(JSON.stringify({ opcode: 'new_group', name: groupName }));
+  }
+});
+
+joinToGroup.addEventListener('click', function (event) {
+  event.preventDefault();
+  const groupId = prompt('Podaj ID grupy, do której chcesz dołączyć:');
+  if (groupId) {
+    socket.send(JSON.stringify({ opcode: 'join_group', joinGroupId: parseInt(groupId) }));
+  }
+});
