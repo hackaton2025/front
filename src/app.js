@@ -1,6 +1,8 @@
+const messagesContainer = document.getElementById('messageList');
 let token;
 const groupsList   = document.getElementById('groups');
 const channelsList = document.getElementById('channels');
+const socket = new WebSocket('ws://192.168.109.120:3000');
 
 function GetURLParameter(sParam)
 {
@@ -19,8 +21,6 @@ function GetURLParameter(sParam)
 async function fetchData() {
   token = document.cookie.split('=')[1];
   if (!token) { console.error('Token not found!'); return; }
-
-  const socket = new WebSocket('ws://192.168.109.120:3000');
 
   socket.onopen = () => {
     console.log('WebSocket connection established.');
@@ -87,32 +87,60 @@ async function fetchData() {
 
         break;
 
-      case 'get_messages_ack':
-        console.log('Received messages:', json);
-        /* === WIADOMOŚCI === */
-        const messagesContainer = document.getElementById('messages');
-        messagesContainer.innerHTML = '';
+case 'get_messages_ack':
+    console.log('Received messages:', json);
+    /* === WIADOMOŚCI === */
 
-        json.messages?.forEach(message => {
-          const div = document.createElement('div');
-          div.className = 'message';
-          div.innerHTML = `
+    json.messages?.forEach(message => {
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.innerHTML = `
             <div class="message-header">
-              <strong>${message.username}</strong>
-              <span class="text-muted">${new Date(message.created_at).toLocaleTimeString()}</span>
+                <strong>${message.username}</strong>
+                <span class="text-muted">${new Date(message.created_at).toLocaleTimeString()}</span>
             </div>
             <div class="message-body">
-              ${message.content}
+                ${message.content}
             </div>`;
-          messagesContainer.insertBefore(div, messagesContainer.firstChild);
-        });
-        if (json.messages.length === 0) {
-          const h4 = document.createElement('h4');
-          h4.className = 'text-muted';
-          h4.innerHTML = 'Brak wiadomości w tym kanale.';
-          messagesContainer.appendChild(h4);
-        }
-        break;
+        messagesContainer.appendChild(div); // Dodaj wiadomość na końcu kontenera
+    });
+
+    if (json.messages.length === 0) {
+        const h4 = document.createElement('h4');
+        h4.className = 'text-muted';
+        h4.innerHTML = 'Brak wiadomości w tym kanale.';
+        messagesContainer.appendChild(h4);
+    }
+
+    // Automatyczne przewijanie do dołu
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    break;
+
+    case 'new_message':
+      console.log('Received new message:', json);
+  
+      // Sprawdź, czy dane wiadomości istnieją
+      if (!json.content || !json.username || !json.created_at) {
+          console.error('Incomplete message data:', json);
+          return;
+      }
+  
+      /* === WIADOMOŚCI === */
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `
+          <div class="message-header">
+              <strong>${json.username ?? 'Unknown User'}</strong>
+              <span class="text-muted">${new Date(json.created_at).toLocaleTimeString()}</span>
+          </div>
+          <div class="message-body">
+              ${json.content}
+          </div>`;
+      messagesContainer.insertBefore(div, messagesContainer.firstChild); // Dodaj wiadomość na końcu kontenera
+  
+      // Automatyczne przewijanie do dołu
+      // messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      break;
       default:
         // inne komunikaty
         break;
@@ -121,4 +149,39 @@ async function fetchData() {
 }
 
 fetchData();
-// console.log(GetURLParameter('group'));
+
+// ========== Wysyłanie wiadomości ========== //
+
+let messageInput = document.getElementById('messageInput');
+let sendMessageButton = document.getElementById('sendMessage');
+
+sendMessageButton.addEventListener('click', function (event) {
+  event.preventDefault();
+
+  const messageContent = messageInput.value.trim();
+  if (!messageContent) {
+    console.log('Message is empty. Not sending.');
+    return;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const channelId = urlParams.get('channel');
+
+  if (!channelId) {
+    console.log('No channel selected. Cannot send message.');
+    return;
+  }
+
+  // Wyślij wiadomość do serwera przez WebSocket
+  const message = {
+    opcode: 'message',
+    channel_id: parseInt(channelId),
+    content: messageContent,
+  };
+
+  socket.send(JSON.stringify(message));
+  console.log('Message sent:', message);
+
+  // Wyczyść pole tekstowe po wysłaniu wiadomości
+  messageInput.value = '';
+});

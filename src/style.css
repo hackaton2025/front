@@ -8,3 +8,10 @@
 .sidebar {
   overflow-y: auto;
 }
+
+#messageList {
+  overflow-y: auto;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column-reverse; /* Ustawia wiadomości od dołu */
+}
