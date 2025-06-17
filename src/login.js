@@ -27,7 +27,7 @@ submitButton.addEventListener('click', async function(event) {
     if (data.success == true) {
         console.log(data)
         document.cookie = `token=${data.sessionToken}; path=/`
-        window.location.href = 'index.html';
+        window.location.href = 'main.html';
     } else {
         spinner.style.display = 'none';
         loginResult.innerText = 'Logowanie nie powiodło się: ' + data.message;
