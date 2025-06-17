@@ -237,6 +237,8 @@ sendMessageButton.addEventListener('click', function (event) {
 
 let createNewGroup = document.getElementById('createNewGroup');
 let joinToGroup = document.getElementById('joinToGroup');
+let createNewChanel = document.getElementById('createNewChanel');
+let createNewLesson = document.getElementById('createNewLesson');
 
 createNewGroup.addEventListener('click', function (event) {
   event.preventDefault();
@@ -253,5 +255,34 @@ joinToGroup.addEventListener('click', function (event) {
   if (groupId) {
     socket.send(JSON.stringify({ opcode: 'join_group', group_id: parseInt(groupId) }));
     location.reload();
+  }
+});
+
+createNewChanel.addEventListener('click', function (event) {
+  event.preventDefault();
+  const channelName = prompt('Podaj nazwę nowego kanału:');
+  const urlParams = new URLSearchParams(window.location.search);
+  const groupId = urlParams.get('group');
+
+  if (channelName && groupId) {
+    socket.send(JSON.stringify({ opcode: 'new_channel', name: channelName, group_id: parseInt(groupId) }));
+    location.reload();
+  } else {
+    alert('Nie wybrano grupy lub nie podano nazwy kanału.');
+  }
+});
+
+createNewLesson.addEventListener('click', function (event) {
+  event.preventDefault();
+  const lessonTitle = prompt('Podaj tytuł nowej lekcji:');
+  const lessonContent = prompt('Podaj treść lekcji:');
+  const urlParams = new URLSearchParams(window.location.search);
+  const groupId = urlParams.get('group');
+
+  if (lessonTitle && lessonContent && groupId) {
+    socket.send(JSON.stringify({ opcode: 'new_lesson', title: lessonTitle, content: lessonContent, group_id: parseInt(groupId) }));
+    location.reload();
+  } else {
+    alert('Nie wybrano grupy lub nie podano tytułu/treści lekcji.');
   }
 });

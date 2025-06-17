@@ -32,3 +32,17 @@
 #joinToGroup:hover {
   cursor: pointer;
 }
+
+.sidebar h6 {
+  display: flex;
+  justify-content: space-between; /* Aligns the text and icon */
+  align-items: center; /* Centers the icon vertically */
+}
+
+#createNewChanel {
+  cursor: pointer;
+}
+
+#createNewLesson {
+  cursor: pointer;
+}
