@@ -19,6 +19,26 @@ function GetURLParameter(sParam)
     }
 }
 
+// ===== Cookie helpers =====
+function setCookie(name, value, days = 7) {
+  let expires = '';
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days*24*60*60*1000));
+    expires = '; expires=' + date.toUTCString();
+  }
+  document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/';
+}
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+  return null;
+}
+function deleteCookie(name) {
+  document.cookie = name + '=; Max-Age=0; path=/';
+}
+
 function updateLessons(groupId, json) {
   lessonsList.innerHTML = ''; // Wyczyść listę lekcji
 
@@ -45,8 +65,8 @@ function updateLessons(groupId, json) {
 }
 
 async function fetchData() {
-  token = localStorage.getItem('token');
-  if (!token) { console.error('Token not found!'); window.location.href="login.html"; }
+  token = getCookie('token');
+  if (!token) { console.error('Token not found!'); window.location.href="login.html"; return; }
 
   socket.onopen = () => {
     console.log('WebSocket connection established.');
@@ -325,9 +345,9 @@ createNewChanel.addEventListener('click', async function (event) {
 
 createNewLesson.addEventListener('click', async function (event) {
   event.preventDefault();
-  const lessonTitle = await customPrompt('Nowa lekcja', 'Podaj tytuł nowej lekcji:');
+  const lessonTitle = await prompt('Podaj tytuł nowej lekcji:');
   if (!lessonTitle) return;
-  const lessonContent = await customPrompt('Nowa lekcja', 'Podaj treść lekcji:');
+  const lessonContent = await prompt('Podaj treść lekcji:');
   if (!lessonContent) return;
   const urlParams = new URLSearchParams(window.location.search);
   const groupId = urlParams.get('group');
@@ -345,6 +365,6 @@ createNewLesson.addEventListener('click', async function (event) {
 
 signOut.addEventListener('click', function (event) {
   event.preventDefault();
-  localStorage.removeItem('token');
+  deleteCookie('token');
   window.location.href = 'index.html';
 });

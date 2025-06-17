@@ -4,9 +4,24 @@ let submitButton = document.getElementById('submit');
 let loginResult = document.getElementById('loginResult');
 let spinner = document.getElementById('spinner');   
 
-//if token in local storage
-if (localStorage.getItem('token')) {
-    window.location.href = 'main.html';
+// ===== Cookie helpers =====
+function setCookie(name, value, days = 7) {
+  let expires = '';
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days*24*60*60*1000));
+    expires = '; expires=' + date.toUTCString();
+  }
+  document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/';
+}
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+  return null;
+}
+function deleteCookie(name) {
+  document.cookie = name + '=; Max-Age=0; path=/';
 }
 
 submitButton.addEventListener('click', async function(event) {
@@ -30,8 +45,7 @@ submitButton.addEventListener('click', async function(event) {
     console.log(data);
 
     if (data.success == true) {
-        console.log(data)
-        localStorage.setItem('token', data.sessionToken);
+        setCookie('token', data.sessionToken, 7);
         window.location.href = 'main.html';
     } else {
         spinner.style.display = 'none';

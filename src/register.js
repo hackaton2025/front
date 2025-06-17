@@ -6,6 +6,16 @@ let submitButton = document.getElementById('submit');
 let loginResult = document.getElementById('loginResult');
 let spinner = document.getElementById('spinner');   
 
+function setCookie(name, value, days = 7) {
+  let expires = '';
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days*24*60*60*1000));
+    expires = '; expires=' + date.toUTCString();
+  }
+  document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/';
+}
+
 submitButton.addEventListener('click', async function(event) {
     event.preventDefault();
 
@@ -39,6 +49,7 @@ submitButton.addEventListener('click', async function(event) {
     console.log(data);
 
     if (data.success == true) {
+        setCookie('token', data.sessionToken, 7);
         window.location.href = 'login.html';
     } else {
         spinner.style.display = 'none';
