@@ -45,7 +45,7 @@ function updateLessons(groupId, json) {
 }
 
 async function fetchData() {
-  token = document.cookie.split('=')[1];
+  token = localStorage.getItem('token');
   if (!token) { console.error('Token not found!'); window.location.href="login.html"; }
 
   socket.onopen = () => {
@@ -190,6 +190,14 @@ case 'get_messages_ack':
         case 'join_group_ack':
           console.log('Joined group:', json);
         break;
+      case 'new_lesson_ack':
+        console.log('Lesson added successfully:', json);
+        location.reload();
+        break;
+      case 'error':
+        console.error('Server error:', json);
+        customAlert('Błąd', json.message || 'Wystąpił błąd podczas dodawania lekcji.');
+        break;
       default:
         // inne komunikaty
         break;
@@ -243,57 +251,100 @@ let createNewChanel = document.getElementById('createNewChanel');
 let createNewLesson = document.getElementById('createNewLesson');
 let signOut = document.getElementById('signOut');
 
-createNewGroup.addEventListener('click', function (event) {
+// ===== Custom Modal Prompt/Alert for Electron =====
+function customPrompt(title, message, placeholder = '', defaultValue = '') {
+  return new Promise((resolve) => {
+    const modal = new bootstrap.Modal(document.getElementById('customModal'));
+    document.getElementById('customModalLabel').innerText = title;
+    document.getElementById('customModalMessage').innerText = message;
+    const input = document.getElementById('customModalInput');
+    input.style.display = '';
+    input.value = defaultValue;
+    input.placeholder = placeholder;
+    input.focus();
+    document.getElementById('customModalOk').onclick = () => {
+      modal.hide();
+      resolve(input.value);
+    };
+    // Cancel button closes modal and resolves null
+    document.getElementById('customModal').addEventListener('hidden.bs.modal', function handler() {
+      document.getElementById('customModal').removeEventListener('hidden.bs.modal', handler);
+      resolve(null);
+    });
+    modal.show();
+  });
+}
+
+function customAlert(title, message) {
+  return new Promise((resolve) => {
+    const modal = new bootstrap.Modal(document.getElementById('customModal'));
+    document.getElementById('customModalLabel').innerText = title;
+    document.getElementById('customModalMessage').innerText = message;
+    document.getElementById('customModalInput').style.display = 'none';
+    document.getElementById('customModalOk').onclick = () => {
+      modal.hide();
+      resolve();
+    };
+    modal.show();
+  });
+}
+
+createNewGroup.addEventListener('click', async function (event) {
   event.preventDefault();
-  const groupName = prompt('Podaj nazwę nowej grupy:');
+  const groupName = await customPrompt('Nowa grupa', 'Podaj nazwę nowej grupy:');
   if (groupName) {
     socket.send(JSON.stringify({ opcode: 'new_group', name: groupName }));
     location.reload();
   }
 });
 
-joinToGroup.addEventListener('click', function (event) {
+joinToGroup.addEventListener('click', async function (event) {
   event.preventDefault();
-  const groupId = prompt('Podaj ID grupy, do której chcesz dołączyć:');
+  const groupId = await customPrompt('Dołącz do grupy', 'Podaj ID grupy, do której chcesz dołączyć:');
   if (groupId) {
     socket.send(JSON.stringify({ opcode: 'join_group', group_id: parseInt(groupId) }));
     location.reload();
   }
 });
 
-createNewChanel.addEventListener('click', function (event) {
+createNewChanel.addEventListener('click', async function (event) {
   event.preventDefault();
-  const channelName = prompt('Podaj nazwę nowego kanału:');
+  const channelName = await customPrompt('Nowy kanał', 'Podaj nazwę nowego kanału:');
   const urlParams = new URLSearchParams(window.location.search);
   const groupId = urlParams.get('group');
 
   if (channelName && groupId) {
     socket.send(JSON.stringify({ opcode: 'new_channel', name: channelName, group_id: parseInt(groupId) }));
     location.reload();
+  } else if (!groupId) {
+    await customAlert('Błąd', 'Nie wybrano grupy.');
   } else {
-    alert('Nie wybrano grupy lub nie podano nazwy kanału.');
+    await customAlert('Błąd', 'Nie podano nazwy kanału.');
   }
 });
 
-createNewLesson.addEventListener('click', function (event) {
+createNewLesson.addEventListener('click', async function (event) {
   event.preventDefault();
-  const lessonTitle = prompt('Podaj tytuł nowej lekcji:');
-  const lessonContent = prompt('Podaj treść lekcji:');
+  const lessonTitle = await customPrompt('Nowa lekcja', 'Podaj tytuł nowej lekcji:');
+  if (!lessonTitle) return;
+  const lessonContent = await customPrompt('Nowa lekcja', 'Podaj treść lekcji:');
+  if (!lessonContent) return;
   const urlParams = new URLSearchParams(window.location.search);
   const groupId = urlParams.get('group');
 
   if (lessonTitle && lessonContent && groupId) {
+    console.log('Sending new_lesson:', { opcode: 'new_lesson', title: lessonTitle, content: lessonContent, group_id: parseInt(groupId) });
     socket.send(JSON.stringify({ opcode: 'new_lesson', title: lessonTitle, content: lessonContent, group_id: parseInt(groupId) }));
-    location.reload();
+    // Wait for ack before reload
+  } else if (!groupId) {
+    await customAlert('Błąd', 'Nie wybrano grupy.');
   } else {
-    alert('Nie wybrano grupy lub nie podano tytułu/treści lekcji.');
+    await customAlert('Błąd', 'Nie podano tytułu lub treści lekcji.');
   }
 });
 
 signOut.addEventListener('click', function (event) {
   event.preventDefault();
-  document.cookie.split(";").forEach(cookie => {
-    document.cookie = cookie.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
-  });
+  localStorage.removeItem('token');
   window.location.href = 'index.html';
 });

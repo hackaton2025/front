@@ -26,7 +26,7 @@ submitButton.addEventListener('click', async function(event) {
 
     if (data.success == true) {
         console.log(data)
-        document.cookie = `token=${data.sessionToken}; path=/`
+        localStorage.setItem('token', data.sessionToken);
         window.location.href = 'main.html';
     } else {
         spinner.style.display = 'none';
