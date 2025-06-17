@@ -1,0 +1,43 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .app-grid {
+    display: grid;
+    grid-template-columns: 70px 1fr; /* Slim sidebar */
+    height: 100vh;
+  }
+  .sidebar {
+    grid-column: 1;
+    height: 100vh;
+    overflow-y: auto;
+    width: 70px !important; /* Slim sidebar */
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    align-items: center;
+  }
+  .sidebar .nav-link {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 1.5rem;
+  }
+  .sidebar .fs-4 {
+    display: none;
+  }
+  .sidebar .dropdown {
+    justify-content: center;
+  }
+  .sidebar .dropdown-toggle strong {
+    display: none;
+  }
+  .sidebar .dropdown-toggle img {
+    margin-right: 0;
+  }
+  .main-content {
+    grid-column: 2;
+    overflow-y: auto;
+    height: 100vh;
+  }
