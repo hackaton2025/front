@@ -4,6 +4,11 @@ let submitButton = document.getElementById('submit');
 let loginResult = document.getElementById('loginResult');
 let spinner = document.getElementById('spinner');   
 
+//if token in local storage
+if (localStorage.getItem('token')) {
+    window.location.href = 'main.html';
+}
+
 submitButton.addEventListener('click', async function(event) {
     event.preventDefault();
 
