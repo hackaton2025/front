@@ -9,9 +9,18 @@
   overflow-y: auto;
 }
 
-#messageList {
-  overflow-y: auto;
-  max-height: 500px;
+#messages {
   display: flex;
-  flex-direction: column-reverse; /* Ustawia wiadomości od dołu */
+  flex-direction: column;
+  height: 100%;
+}
+
+#messageList {
+  flex-grow: 1; /* Makes the message list take up all available space */
+  overflow-y: auto; /* Enables scrolling for messages */
+}
+
+#messageInputContainer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
 }

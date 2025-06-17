@@ -2,6 +2,7 @@ const messagesContainer = document.getElementById('messageList');
 let token;
 const groupsList   = document.getElementById('groups');
 const channelsList = document.getElementById('channels');
+const lessonsList = document.getElementById('lessons');
 const socket = new WebSocket('ws://192.168.109.120:3000');
 
 function GetURLParameter(sParam)
@@ -16,6 +17,31 @@ function GetURLParameter(sParam)
             return sParameterName[1];
         }
     }
+}
+
+function updateLessons(groupId, json) {
+  lessonsList.innerHTML = ''; // Wyczyść listę lekcji
+
+  // Pobierz lekcje dla wybranej grupy
+  const groupLessons = json.lessons?.filter(lesson => lesson.group_id == groupId);
+
+  if (groupLessons && groupLessons.length > 0) {
+    groupLessons.forEach(lesson => {
+      const li = document.createElement('li');
+      li.className = 'nav-item';
+      li.innerHTML = `
+        <a href="?group=${groupId}&lesson=${lesson.id}" class="nav-link d-flex align-items-center">
+          <i class="bi bi-journal me-2"></i>
+          <span>${lesson.title}</span>
+        </a>`;
+      lessonsList.appendChild(li);
+    });
+  } else {
+    const li = document.createElement('li');
+    li.className = 'nav-item text-muted';
+    li.innerHTML = 'Brak lekcji dla tej grupy.';
+    lessonsList.appendChild(li);
+  }
 }
 
 async function fetchData() {
@@ -70,6 +96,9 @@ async function fetchData() {
             }
         });
 
+        // Wywołaj funkcję aktualizującą lekcje
+        updateLessons(currentGroupId, json);
+
         const urlParams = new URLSearchParams(window.location.search);
         
         if (urlParams.has('channel')) {
@@ -85,13 +114,26 @@ async function fetchData() {
             messagesContainer.appendChild(h4);
         }
 
+        if(urlParams.has('lesson')) {
+            const lessonId = parseInt(urlParams.get('lesson'));
+            const lesson = json.lessons?.find(lesson => lesson.id == lessonId);
+            if (lesson) {
+              document.getElementById('messages').innerText = lesson.content || 'Brak treści dla tej lekcji.';
+            } else {
+              document.getElementById('messages').innerText = 'Brak lekcji o podanym ID.';
+            }
+        }
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
         break;
 
 case 'get_messages_ack':
     console.log('Received messages:', json);
     /* === WIADOMOŚCI === */
 
-    json.messages?.forEach(message => {
+    // Odwróć kolejność wiadomości
+    const reversedMessages = json.messages?.slice().reverse();
+
+    reversedMessages?.forEach(message => {
         const div = document.createElement('div');
         div.className = 'message';
         div.innerHTML = `
@@ -102,7 +144,7 @@ case 'get_messages_ack':
             <div class="message-body">
                 ${message.content}
             </div>`;
-        messagesContainer.appendChild(div); // Dodaj wiadomość na końcu kontenera
+        messagesContainer.appendChild(div); // Dodaj wiadomość na końcu
     });
 
     if (json.messages.length === 0) {
@@ -111,42 +153,40 @@ case 'get_messages_ack':
         h4.innerHTML = 'Brak wiadomości w tym kanale.';
         messagesContainer.appendChild(h4);
     }
-
-    // Automatyczne przewijanie do dołu
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     break;
 
     case 'new_message':
-      console.log('Received new message:', json);
-  
-      // Sprawdź, czy dane wiadomości istnieją
-      if (!json.content || !json.username || !json.created_at) {
-          console.error('Incomplete message data:', json);
-          return;
-      }
-      console.log(json);
-      console.log(parseInt(json.channelId), parseInt(GetURLParameter('channel')));
-      if (parseInt(json.channelId) != parseInt(GetURLParameter('channel'))) {
-        console.log('Message not for this channel. Ignoring.');
+        console.log('Received new message:', json);
+
+        // Sprawdź, czy dane wiadomości istnieją
+        if (!json.content || !json.username || !json.created_at) {
+            console.error('Incomplete message data:', json);
+            return;
+        }
+
+        console.log(json);
+        console.log(parseInt(json.channelId), parseInt(GetURLParameter('channel')));
+        if (parseInt(json.channelId) != parseInt(GetURLParameter('channel'))) {
+            console.log('Message not for this channel. Ignoring.');
+            break;
+        }
+
+        /* === WIADOMOŚCI === */
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.innerHTML = `
+            <div class="message-header">
+                <strong>${json.username ?? 'Unknown User'}</strong>
+                <span class="text-muted">${new Date(json.created_at).toLocaleTimeString()}</span>
+            </div>
+            <div class="message-body">
+                ${json.content}
+            </div>`;
+        messagesContainer.appendChild(div); // Dodaj wiadomość na końcu
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
         break;
-      }
-  
-      /* === WIADOMOŚCI === */
-      const div = document.createElement('div');
-      div.className = 'message';
-      div.innerHTML = `
-          <div class="message-header">
-              <strong>${json.username ?? 'Unknown User'}</strong>
-              <span class="text-muted">${new Date(json.created_at).toLocaleTimeString()}</span>
-          </div>
-          <div class="message-body">
-              ${json.content}
-          </div>`;
-      messagesContainer.insertBefore(div, messagesContainer.firstChild); // Dodaj wiadomość na końcu kontenera
-  
-      // Automatyczne przewijanie do dołu
-      // messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      break;
+
       default:
         // inne komunikaty
         break;

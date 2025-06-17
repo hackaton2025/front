@@ -64,8 +64,7 @@
       <nav class="sidebar p-3 bg-light border-end">
         <h6 class="text-muted mb-3">Grupy</h6>
         <ul id="groups" class="nav nav-pills flex-column mb-auto"></ul>
-        <hr>
-        <img src="plus.svg" alt="add group" width="36" height="36" class="img-fluid m-2">
+        </ul>
       </nav>
 
       <!-- sidebar: KANAŁY -->
@@ -77,12 +76,12 @@
       </nav>
 
       <!-- przyszła treść/komponenty -->
-    <main id="messages" class="p-4" style="overflow-y: auto; max-height: 100%;">
-
-      <div id="messageList"> </div>
-
-      <div>
-        <input type="text" id="messageInput" class="form-control mb-3" placeholder="Napisz wiadomość...">
+    <main id="messages" class="p-4 d-flex flex-column" style="overflow-y: auto; max-height: 100%;">
+      <div id="messageList" class="flex-grow-1">
+        <!-- Messages will be appended here -->
+      </div>
+      <div id="messageInputContainer" class="d-flex align-items-center p-2 border-top">
+        <input type="text" id="messageInput" class="form-control me-2" placeholder="Napisz wiadomość...">
         <button id="sendMessage" class="btn btn-primary">Wyślij</button>
       </div>
     </main>
