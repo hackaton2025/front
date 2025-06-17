@@ -46,7 +46,7 @@ function updateLessons(groupId, json) {
 
 async function fetchData() {
   token = document.cookie.split('=')[1];
-  if (!token) { console.error('Token not found!'); return; }
+  if (!token) { console.error('Token not found!'); window.location.href="login.html"; }
 
   socket.onopen = () => {
     console.log('WebSocket connection established.');
@@ -235,10 +235,13 @@ sendMessageButton.addEventListener('click', function (event) {
   messageInput.value = '';
 });
 
+// ========== Listeners ========== //
+
 let createNewGroup = document.getElementById('createNewGroup');
 let joinToGroup = document.getElementById('joinToGroup');
 let createNewChanel = document.getElementById('createNewChanel');
 let createNewLesson = document.getElementById('createNewLesson');
+let signOut = document.getElementById('signOut');
 
 createNewGroup.addEventListener('click', function (event) {
   event.preventDefault();
@@ -285,4 +288,12 @@ createNewLesson.addEventListener('click', function (event) {
   } else {
     alert('Nie wybrano grupy lub nie podano tytułu/treści lekcji.');
   }
+});
+
+signOut.addEventListener('click', function (event) {
+  event.preventDefault();
+  document.cookie.split(";").forEach(cookie => {
+    document.cookie = cookie.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+  });
+  window.location.href = 'index.html';
 });
