@@ -232,6 +232,14 @@ fetchData();
 let messageInput = document.getElementById('messageInput');
 let sendMessageButton = document.getElementById('sendMessage');
 
+// Allow sending message with Enter key
+messageInput.addEventListener('keydown', function(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessageButton.click();
+  }
+});
+
 sendMessageButton.addEventListener('click', function (event) {
   event.preventDefault();
 
