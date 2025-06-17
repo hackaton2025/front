@@ -85,6 +85,11 @@ async function fetchData() {
             messagesContainer.appendChild(h4);
         }
 
+        if (urlParams.has('group')) {
+          const groupId = parseInt(urlParams.get('group'));
+          
+        }
+
         break;
 
 case 'get_messages_ack':
